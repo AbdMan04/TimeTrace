@@ -22,29 +22,36 @@ This is not a productivity or task-management app. It is a log that helps you an
 
 ## Running it
 
-Three ways:
-
-1. **Single-file build (double-click).** After building once, open `dist-single/index.html` in any browser — no server needed.
+1. **The published file.** `index.html` in the repo root is the single-file build (everything inlined). Open it directly in a browser, or just use the GitHub Pages URL. After editing source, regenerate it:
 
    ```bash
-   npm run build:single
+   npm run publish:single   # builds dist-single/ and copies to ./index.html
    ```
 
-   Like all bundler output it uses ES modules, so while Firefox happily runs the single file from disk, **Chrome/Edge block module scripts on `file://` — the single-file build inlines everything precisely to get around that.** If it still won't run, use one of the options below.
+   Like all bundler output it uses ES modules, so while Firefox happily runs the single file from disk, **Chrome/Edge block module scripts on `file://` — the single-file build inlines everything precisely to get around that.** If it still won't run, use option 2.
 
-2. **Serve the build** (fastest, most reliable — also what GitHub Pages uses):
+2. **Development server** with hot reload for editing:
+
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. **Serve the multi-file build** (what the GitHub Actions workflow deploys):
 
    ```bash
    npm run build
    npx serve dist        # or: py -m http.server 8000 -d dist
    ```
 
-3. **Development server** with hot reload for editing:
+## Deploying to GitHub Pages
 
-   ```bash
-   npm install
-   npm run dev
-   ```
+Either works out of the box:
+
+- **Deploy from a branch (no setup).** Push `index.html` in the repo root — the single-file build from `npm run publish:single`. In **Settings → Pages**, pick *Deploy from a branch → main / (root)*. Any later update is just `npm run publish:single && git push`.
+- **GitHub Actions.** Enable **Settings → Pages → Source: GitHub Actions**. The included workflow (`.github/workflows/deploy.yml`) builds and publishes `dist/` on every push to `main`.
+
+The build uses a relative base (`base: './'`), so both methods work under the `<user>.github.io/<repo>/` sub-path with no further configuration.
 
 ## Tech
 
@@ -53,7 +60,9 @@ Three ways:
 - `localStorage` for persistence — no backend, no network calls
 
 ```
+index.html                committed single-file build (published to Pages / double-click)
 src/
+  index.html              Vite dev entry (meta + fonts + root div)
   main.jsx                 React entry
   App.jsx                  state, hash routing, view switching
   styles.css               design: type scale, timeline rail, spacing
@@ -63,6 +72,7 @@ src/
     TodayPanel.jsx         day heading, timeline, breakdown, reflection
     WeekPanel.jsx          Mon–Sun totals
     ActivityDialog.jsx     add/edit form (native <dialog>)
+scripts/publish-single.mjs COPY dist-single/index.html -> ./index.html
 vite.config.js             app build (dist/)
 vite.singlefile.config.js  single-file build (dist-single/)
 ```

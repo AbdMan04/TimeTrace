@@ -1,9 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// base './' keeps assets relative so the build deploys on GitHub Pages
-// (and any sub-path) without configuration.
+// The dev/build source lives in src/ (entry: src/index.html). The root
+// index.html is the committed single-file build that branch-mode GitHub
+// Pages serves directly.
+// base './' keeps assets relative so builds deploy under any sub-path.
 export default defineConfig({
+  root: 'src',
   plugins: [react()],
   base: './',
+  build: {
+    outDir: '../dist',
+  },
 });

@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:single": "vite build --config vite.singlefile.config.js",
+    "publish:single": "npm run build:single && node scripts/publish-single.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
