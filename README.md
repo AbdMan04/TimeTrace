@@ -13,7 +13,7 @@ This is not a productivity or task-management app. It is a log that helps you an
 - **Today overview** — a big day total, a dated page header, and a neutral one-line takeaway
 - **Timeline** — each activity on a time rail, with start/end times, category, duration, and an optional note
 - **Where your time went** — per-category totals with proportion bars
-- **A quick reflection** — plain calculations only (longest session, busiest window, top category, focused-session count). No fake AI
+- **A quick reflection** — plain calculations only (longest session, busiest window, top category, focused-session count).
 - **Week view** — simple Mon–Sun totals; click a day to open it
 - **Add / edit / delete** activities
 - **Demo day** — one-click "Load example day" to see how a day reads, on your empty days
