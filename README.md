@@ -23,16 +23,6 @@ This is not a productivity or task-management app. It is a log that helps you an
 
 The app is fully static. The quickest way to open it is to double-click `index.html`.
 
-For reliable localStorage persistence, serve it instead:
-
-```bash
-py -m http.server 8000
-```
-
-Then visit <http://localhost:8000/index.html>.
-
-> As a student project this asks for Python for local serving, but any static file server works (`npx serve`, `python3 -m http.server`, VS Code Live Server, …).
-
 ## Tech
 
 - HTML5
@@ -41,15 +31,6 @@ Then visit <http://localhost:8000/index.html>.
 - Vanilla JavaScript
 
 No build step, no framework, no backend.
-
-## Project structure
-
-```
-index.html       semantic page structure, Bootstrap + fonts via CDN
-css/styles.css   custom design: type scale, timeline rail, spacing
-js/state.js      data layer: storage, duration math, insights
-js/main.js       UI layer: rendering, interactions, modal, week view
-```
 
 ## Data model
 
@@ -67,15 +48,4 @@ Each activity follows this shape (stored under the `timetrace.activities.v1` key
   note: "Worked on the portfolio."
 }
 ```
-
 Totals, category groups, and insights are all calculated from this list.
-
-## Roadmap-ish ideas
-
-- Deeper weekly patterns (busiest weekday, trends)
-- Data export / import (JSON)
-- Edits of past days directly from the week view
-
-## License
-
-Made for a school project. Feel free to use, remix, and break it.
