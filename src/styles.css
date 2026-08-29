@@ -33,6 +33,8 @@
 
 html { scroll-behavior: smooth; }
 
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
   background: var(--paper);
   background-image: radial-gradient(56rem 30rem at 50% -8rem, rgba(97, 83, 51, 0.06), transparent 70%);
@@ -40,10 +42,20 @@ body {
   font-family: var(--sans);
   font-size: 1rem;
   line-height: 1.6;
+  margin: 0;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+button {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+h1, h2, h3, p { margin-top: 0; }
 
 /* skip link — visible only when focused */
 .skip-link {
@@ -64,7 +76,7 @@ body {
 /* heading anchors that may be jumped to must not collide with the skip link */
 main, .day-heading, .week-heading, .section { scroll-margin-top: 1.5rem; }
 
-h1, h2, h3, .day-note, .t-note, .refl-item, .empty-text {
+h2, h3, .day-note, .t-note, .refl-item, .empty-text {
   text-wrap: pretty;
 }
 
@@ -77,6 +89,8 @@ h1, h2, h3 { text-wrap: balance; }
   outline-offset: 2px;
   border-radius: 2px;
 }
+
+[hidden] { display: none !important; }
 
 .page {
   max-width: 46rem;
@@ -133,10 +147,8 @@ h1, h2, h3 { text-wrap: balance; }
   background: none;
   border: 0;
   padding: 0.3rem 0.65rem;
-  font-family: inherit;
   font-size: 0.9rem;
   color: var(--ink-muted);
-  cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
 }
@@ -155,6 +167,11 @@ h1, h2, h3 { text-wrap: balance; }
   font-family: var(--sans);
   border-radius: 6px;
   font-weight: 500;
+  display: inline-block;
+  text-align: center;
+  user-select: none;
+  text-decoration: none;
+  border: 1px solid transparent;
 }
 
 .btn,
@@ -211,10 +228,8 @@ h1, h2, h3 { text-wrap: balance; }
   background: none;
   border: 0;
   color: var(--ink-muted);
-  font-family: inherit;
   font-size: 0.85rem;
   padding: 0.25rem 0.35rem;
-  cursor: pointer;
   border-radius: 4px;
 }
 
@@ -383,7 +398,6 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 .t-body {
-  padding: 0 0 0.1rem;
   border-radius: 6px;
   margin: -0.55rem -0.6rem;
   padding: 0.55rem 0.6rem;
@@ -416,7 +430,7 @@ h1, h2, h3 { text-wrap: balance; }
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  margin: 0.35rem 0 0;
+  margin-top: 0.35rem;
   font-size: 0.8rem;
   color: var(--ink-muted);
 }
@@ -521,7 +535,7 @@ h1, h2, h3 { text-wrap: balance; }
   display: flex;
   gap: 0.75rem;
   align-items: baseline;
-  margin: 0;
+  margin-bottom: 0;
   font-size: 1rem;
   line-height: 1.55;
   max-width: 32rem;
@@ -549,17 +563,17 @@ h1, h2, h3 { text-wrap: balance; }
   color: var(--accent);
   opacity: 0.35;
   margin-bottom: 1.1rem;
+  display: block;
 }
 
 .empty-title {
-  font: inherit;
   font-weight: 600;
   font-size: 1.05rem;
   color: var(--ink);
   margin: 0 0 0.35rem;
 }
 
-.empty-text { margin: 0 0 1.1rem; }
+.empty-text { margin-bottom: 0; }
 
 .demo-row {
   display: flex;
@@ -601,10 +615,7 @@ h1, h2, h3 { text-wrap: balance; }
   border-top: 1px solid var(--line);
   padding: 0.85rem 0.4rem;
   text-align: left;
-  cursor: pointer;
-  font-family: inherit;
   color: var(--ink-muted);
-  border-radius: 0;
 }
 
 .week-row:last-of-type { border-bottom: 1px solid var(--line); }
@@ -651,37 +662,94 @@ h1, h2, h3 { text-wrap: balance; }
   color: var(--ink-faint);
 }
 
-/* ---------------------------------- modal --------------------------------- */
+/* ------------------------------- activity dialog -------------------------- */
 
-.modal-content {
+.dialog {
+  border: 0;
+  padding: 0;
+  margin: auto;
+  width: min(calc(100% - 2rem), 30rem);
+  max-width: none;
+  background: transparent;
+  color: var(--ink);
+  overflow: visible;
+}
+
+.dialog[open] { animation: dialog-in 0.18s ease; }
+
+.dialog::backdrop {
+  background: rgba(38, 37, 31, 0.42);
+  animation: backdrop-in 0.18s ease;
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.dialog-content {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 10px;
   box-shadow: 0 18px 45px -18px rgba(38, 37, 31, 0.35);
   overscroll-behavior: contain;
+  overflow: auto;
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
 }
 
-.modal-header { border-bottom: 1px solid var(--line); padding: 1.15rem 1.4rem; }
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.4rem;
+  border-bottom: 1px solid var(--line);
+}
 
-.modal-title {
+.dialog-title {
   font-family: var(--serif);
   font-weight: 600;
   font-size: 1.4rem;
+  margin: 0;
 }
 
-.btn-close { filter: none; }
+.dialog-close {
+  border: 0;
+  background: none;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--ink-muted);
+  padding: 0.3rem 0.55rem;
+  border-radius: 6px;
+}
 
-.modal-body { padding: 1.4rem 1.4rem 0.75rem; }
+.dialog-close:hover { color: var(--ink); background: var(--paper-deep); }
 
-.modal-footer { border-top: 1px solid var(--line); padding: 1rem 1.4rem; }
+.dialog-body { padding: 1.4rem 1.4rem 0.75rem; }
 
-.modal-day {
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  padding: 1rem 1.4rem;
+  border-top: 1px solid var(--line);
+}
+
+.dialog-day {
   margin: 0 0 1.35rem;
   font-size: 0.78rem;
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: var(--ink-faint);
 }
+
+/* ---------------------------------- form ---------------------------------- */
 
 .field { margin-bottom: 1.15rem; }
 
@@ -696,6 +764,7 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 .form-label {
+  display: block;
   font-size: 0.85rem;
   font-weight: 500;
   color: var(--ink-muted);
@@ -706,6 +775,8 @@ h1, h2, h3 { text-wrap: balance; }
 
 .form-control,
 .form-select {
+  display: block;
+  width: 100%;
   background: var(--paper);
   border: 1px solid var(--line-ui);
   border-radius: 6px;
@@ -715,12 +786,15 @@ h1, h2, h3 { text-wrap: balance; }
   padding: 0.5rem 0.75rem;
 }
 
+textarea.form-control { resize: vertical; }
+
 .form-control:focus,
 .form-select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(46, 94, 71, 0.18);
   background: var(--paper);
   color: var(--ink);
+  outline: none;
 }
 
 .form-control::placeholder { color: var(--ink-faint); }

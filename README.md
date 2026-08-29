@@ -18,19 +18,54 @@ This is not a productivity or task-management app. It is a log that helps you an
 - **Add / edit / delete** activities
 - **Demo day** — one-click "Load example day" to see how a day reads, on your empty days
 - **Everything persists** in `localStorage`; activities are grouped by day, and the app opens on today
+- **Deep links** — `#today`, `#week`, `#day/YYYY-MM-DD` all work as plain URLs
 
 ## Running it
 
-The app is fully static. The quickest way to open it is to double-click `index.html`.
+Three ways:
+
+1. **Single-file build (double-click).** After building once, open `dist-single/index.html` in any browser — no server needed.
+
+   ```bash
+   npm run build:single
+   ```
+
+   Like all bundler output it uses ES modules, so while Firefox happily runs the single file from disk, **Chrome/Edge block module scripts on `file://` — the single-file build inlines everything precisely to get around that.** If it still won't run, use one of the options below.
+
+2. **Serve the build** (fastest, most reliable — also what GitHub Pages uses):
+
+   ```bash
+   npm run build
+   npx serve dist        # or: py -m http.server 8000 -d dist
+   ```
+
+3. **Development server** with hot reload for editing:
+
+   ```bash
+   npm install
+   npm run dev
+   ```
 
 ## Tech
 
-- HTML5
-- CSS3 (custom design layer)
-- Bootstrap 5 (via CDN — forms, modal, utilities only)
-- Vanilla JavaScript
+- React 18 + Vite 5
+- Plain CSS3 custom design layer (no UI framework)
+- `localStorage` for persistence — no backend, no network calls
 
-No build step, no framework, no backend.
+```
+src/
+  main.jsx                 React entry
+  App.jsx                  state, hash routing, view switching
+  styles.css               design: type scale, timeline rail, spacing
+  lib/timetrace.js         data layer: storage, duration math, insights
+  components/
+    Header.jsx             brand, Today/Week tabs, Add button
+    TodayPanel.jsx         day heading, timeline, breakdown, reflection
+    WeekPanel.jsx          Mon–Sun totals
+    ActivityDialog.jsx     add/edit form (native <dialog>)
+vite.config.js             app build (dist/)
+vite.singlefile.config.js  single-file build (dist-single/)
+```
 
 ## Data model
 
@@ -48,4 +83,5 @@ Each activity follows this shape (stored under the `timetrace.activities.v1` key
   note: "Worked on the portfolio."
 }
 ```
+
 Totals, category groups, and insights are all calculated from this list.

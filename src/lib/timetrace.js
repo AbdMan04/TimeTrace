@@ -1,13 +1,12 @@
-'use strict';
+/* TimeTrace — data layer.
+   Pure, framework-free module: storage, activity math, and plain-text
+   insight calculations. Everything lives in localStorage. */
 
-/* TimeTrace — data layer: storage, activity math, plain-text insights.
-   No framework, no backend. Everything lives in localStorage. */
+export const STORAGE_KEY = 'timetrace.activities.v1';
 
-const STORAGE_KEY = 'timetrace.activities.v1';
+export const CATEGORIES = ['Study', 'Project', 'Personal', 'Entertainment', 'Break', 'Other'];
 
-const CATEGORIES = ['Study', 'Project', 'Personal', 'Entertainment', 'Break', 'Other'];
-
-const CATEGORY_COLORS = {
+export const CATEGORY_COLORS = {
   'Study':         'var(--cat-study)',
   'Project':       'var(--cat-project)',
   'Personal':      'var(--cat-personal)',
@@ -22,29 +21,41 @@ function pad(n) {
   return String(n).padStart(2, '0');
 }
 
-function toISODate(d) {
+export function toISODate(d) {
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
 
-function parseISODate(s) {
+export function parseISODate(s) {
   const p = s.split('-').map(Number);
   return new Date(p[0], p[1] - 1, p[2]);
 }
 
-function todayKey() {
+export function todayKey() {
   return toISODate(new Date());
 }
 
-function timeToMinutes(t) {
+export function fullDateLabel(dateKey) {
+  return parseISODate(dateKey).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  });
+}
+
+export function shortDateLabel(dateKey) {
+  return parseISODate(dateKey).toLocaleDateString('en-US', {
+    month: 'short', day: 'numeric',
+  });
+}
+
+export function timeToMinutes(t) {
   const p = t.split(':').map(Number);
   return p[0] * 60 + p[1];
 }
 
-function minutesToClock(m) {
+export function minutesToClock(m) {
   return pad(Math.floor(m / 60)) + ':' + pad(m % 60);
 }
 
-function formatDuration(mins) {
+export function formatDuration(mins) {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
   if (h === 0 && m === 0) return '0m';
@@ -53,7 +64,7 @@ function formatDuration(mins) {
   return h + 'h ' + m + 'm';
 }
 
-function formatClockHuman(minOfDay) {
+export function formatClockHuman(minOfDay) {
   const h = Math.floor(minOfDay / 60);
   const m = minOfDay % 60;
   const am = h < 12;
@@ -61,13 +72,29 @@ function formatClockHuman(minOfDay) {
   return m === 0 ? hh + ' ' + (am ? 'AM' : 'PM') : hh + ':' + pad(m) + ' ' + (am ? 'AM' : 'PM');
 }
 
-function uid() {
+export function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+export function defaultTimes() {
+  const now = new Date();
+  let m = now.getHours() * 60 + now.getMinutes();
+  m = Math.ceil(m / 30) * 30;
+  if (m > 23 * 60) m = 23 * 60;
+  const end = Math.min(m + 60, 23 * 60 + 30);
+  return { start: minutesToClock(m), end: minutesToClock(end) };
+}
+
+export function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
 
 /* ---------------- storage ---------------- */
 
-function loadActivities() {
+export function loadActivities() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
@@ -76,30 +103,34 @@ function loadActivities() {
   }
 }
 
-function saveActivities(list) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+export function saveActivities(list) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  } catch (_) {
+    /* storage unavailable (e.g. file://) — keep running without persistence */
+  }
 }
 
 /* ---------------- queries ---------------- */
 
-function mondayOf(d) {
+export function mondayOf(d) {
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const idx = (x.getDay() + 6) % 7; // Monday = 0
   x.setDate(x.getDate() - idx);
   return x;
 }
 
-function dayActivities(list, date) {
+export function dayActivities(list, date) {
   return list
     .filter(a => a.date === date)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
 }
 
-function dayTotal(list) {
+export function dayTotal(list) {
   return list.reduce((sum, a) => sum + a.duration, 0);
 }
 
-function categoryTotals(list) {
+export function categoryTotals(list) {
   const map = {};
   list.forEach(a => {
     map[a.category] = (map[a.category] || 0) + a.duration;
@@ -107,7 +138,7 @@ function categoryTotals(list) {
   return Object.entries(map).sort((a, b) => b[1] - a[1]);
 }
 
-function longestSession(list) {
+export function longestSession(list) {
   let best = null;
   list.forEach(a => {
     if (!best || a.duration > best.duration) best = a;
@@ -116,7 +147,7 @@ function longestSession(list) {
 }
 
 /* Busiest contiguous 4-hour window of the day. */
-function busiestWindow(list, windowMinutes) {
+export function busiestWindow(list, windowMinutes) {
   windowMinutes = windowMinutes || 240;
   if (!list.length) return null;
   const day = new Array(1440).fill(0);
@@ -140,13 +171,13 @@ function busiestWindow(list, windowMinutes) {
   return { start: bestStart, end: bestStart + windowMinutes };
 }
 
-function focusedCount(list) {
+export function focusedCount(list) {
   return list.filter(a => a.category === 'Study' || a.category === 'Project').length;
 }
 
 /* ---------------- demo day ---------------- */
 
-function demoActivities(date) {
+export function demoActivities(date) {
   return [
     { id: uid(), date: date, title: 'Data structures revision', category: 'Study', startTime: '09:00', endTime: '11:30', duration: 150, note: 'Recursion, trees, and a few coding problems.' },
     { id: uid(), date: date, title: 'Mid-morning break', category: 'Break', startTime: '11:30', endTime: '12:00', duration: 30, note: '' },
