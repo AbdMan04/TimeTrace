@@ -44,17 +44,7 @@ This is not a productivity or task-management app. It is a log that helps you an
    npx serve dist        # or: py -m http.server 8000 -d dist
    ```
 
-## Deploying to GitHub Pages
-
-Either works out of the box:
-
-- **Deploy from a branch (no setup).** Push `index.html` in the repo root — the single-file build from `npm run publish:single`. In **Settings → Pages**, pick *Deploy from a branch → main / (root)*. Any later update is just `npm run publish:single && git push`.
-- **GitHub Actions.** Enable **Settings → Pages → Source: GitHub Actions**. The included workflow (`.github/workflows/deploy.yml`) builds and publishes `dist/` on every push to `main`.
-
-The build uses a relative base (`base: './'`), so both methods work under the `<user>.github.io/<repo>/` sub-path with no further configuration.
-
 ## Tech
-
 - React 18 + Vite 5
 - Plain CSS3 custom design layer (no UI framework)
 - `localStorage` for persistence — no backend, no network calls
@@ -76,22 +66,3 @@ scripts/publish-single.mjs COPY dist-single/index.html -> ./index.html
 vite.config.js             app build (dist/)
 vite.singlefile.config.js  single-file build (dist-single/)
 ```
-
-## Data model
-
-Each activity follows this shape (stored under the `timetrace.activities.v1` key):
-
-```js
-{
-  id: "k3f9a2",
-  date: "2026-08-29",
-  title: "React Practice",
-  category: "Study",          // Study | Project | Personal | Entertainment | Break | Other
-  startTime: "10:00",
-  endTime: "11:30",
-  duration: 90,               // minutes, derived from start/end
-  note: "Worked on the portfolio."
-}
-```
-
-Totals, category groups, and insights are all calculated from this list.
